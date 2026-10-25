@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup - HotelHive</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.php">HotelHive</a>
+    </nav>
+
+    <div class="form-container">
+        <h3>Signup on HotelHive</h3>
+        <form action="signup.php" method="POST">
+            <div class="mb-3">
+                <input type="text" name="user[username]" placeholder="Username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <input type="email" name="user[email]" placeholder="Email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <input type="password" name="password" placeholder="Password" class="form-control" required>
+            </div>
+            <button type="submit" class="publish-btn">Register</button>
+        </form>
+        <p class="text-center mt-3">Already have an account? <a href="login.html">Login here</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<?php
+session_start();
+include 'db.php';  // Include database connection
+
+// Check if the user is logged in
+$loggedIn = isset($_SESSION['username']);
+$username = $_SESSION['username'] ?? '';
+
+// Handle search query
+$searchQuery = $_GET['search'] ?? '';
+
+// Fetch listings from the database with optional search filter
+$sql = "SELECT * FROM listings WHERE title LIKE ? OR description LIKE ? ORDER BY created_at DESC";
+$stmt = $conn->prepare($sql);
+$searchParam = '%' . $searchQuery . '%';  // Partial match
+$stmt->bind_param('ss', $searchParam, $searchParam);
+$stmt->execute();
+$result = $stmt->get_result();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelHive</title>
+    <link rel="stylesheet" href="./css.css">
+    <link 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+        rel="stylesheet" 
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+        crossorigin="anonymous"
+    >
+</head>
+<body>
+    <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php"><i class="fa-regular fa-compass"></i> HotelHive</a>
+            <form class="d-flex ms-auto" method="GET" action="index.php">
+                <input class="form-control me-2" type="search" name="search" placeholder="Search listings..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+                <button class="btn btn-outline-danger" type="submit">Search</button>
+            </form>
+            <div class="navbar-nav ms-3">
+                <a class="nav-link" href="new.html">Register Your Property</a>
+                <?php if ($loggedIn): ?>
+                    <a class="nav-link ms-3" href="logout.php">Logout</a>
+                <?php else: ?>
+                    <a class="nav-link ms-3" href="signup.html">Signup / Login</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        <?php if ($searchQuery): ?>
+            <p class="text-muted">
+                <?php echo $result->num_rows; ?> result<?php echo $result->num_rows != 1 ? 's' : ''; ?> for "<?php echo htmlspecialchars($searchQuery); ?>"
+            </p>
+        <?php endif; ?>
+
+        <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+            <?php if ($result->num_rows > 0): ?>
+                <?php while ($listing = $result->fetch_assoc()): ?>
+                    <a href="show_listing.php?id=<?php echo $listing['id']; ?>" class="listing-link col mb-4">
+                        <div class="card listing-card" style="width: 20rem;">
+                            <img src="<?php echo $listing['image_url']; ?>" class="card-img-top" style="height: 20rem; object-fit: cover;" alt="<?php echo htmlspecialchars($listing['title']); ?>">
+                            <div class="card-body">
+                                <h5 class="card-title"><?php echo htmlspecialchars($listing['title']); ?></h5>
+                                <p><?php echo htmlspecialchars($listing['location']); ?>, <?php echo htmlspecialchars($listing['country']); ?></p>
+                                <p>Category: <?php echo htmlspecialchars($listing['category']); ?></p>
+                                <p>Owner: <?php echo htmlspecialchars($listing['owner']); ?></p>
+                                <p>&#8377; <?php echo $listing['price']; ?> / night</p>
+                                <p><?php echo htmlspecialchars($listing['description']); ?></p>
+                            </div>
+                        </div>
+                    </a>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="alert alert-warning text-center" role="alert">
+                    No listings found matching your search.
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <footer class="footer mt-5">
+        <div class="f-info">
+            <div class="f-info-socials">
+                <i class="fa-brands fa-square-facebook"></i>
+                <i class="fa-brands fa-square-twitter"></i>
+                <i class="fa-brands fa-square-instagram"></i>
+            </div>
+            <div class="f-info-brand">
+                &copy; HotelHive Private Limited
+            </div>
+            <div class="f-info-links">
+                <a href="./privacy.html">Privacy</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="./terms.html">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+        crossorigin="anonymous">
+    </script>
+</body>
+</html>
+
